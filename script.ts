@@ -82,12 +82,69 @@ class Player {
   }
 }
 
+class Game {
+  gameboard: Gameboard;
+  playerOne: Player;
+  playerTwo: Player;
+  currentPlayer: Player;
+  winningConditions: number[][];
+  constructor() {
+    this.gameboard = new Gameboard();
+    this.playerOne = new Player('Player 1');
+    this.playerTwo = new Player('Player 2', true);
+    this.currentPlayer = this.playerOne;
+    this.winningConditions = this.gameboard.generateWinningConditions();
+  }
 
+  startGame() {
+    this.gameboard.generateGameboard();
+  }
 
+  endGame() {
+    this.gameboard.clearGameboard();
+  }
 
-const gameboard = new Gameboard();
-gameboard.generateGameboard();
+  checkWinningConditions() {
+    const cells = document.querySelectorAll('.cell');
+    const activeCells = Array.from(cells).filter(cell => cell.classList.contains('active'));
+    const activeCellIds = activeCells.map(cell => parseInt(cell.id));
+    for (const condition of this.winningConditions) {
+      if (condition.every(cellId => activeCellIds.includes(cellId))) {
+        return true;
+      }
+    }
+    return false;
+  }
 
-const playerOne = new Player('Wade Watts', false);
-const playerTwo = new Player('Art3mis', true);
-playerOne.makeMove(document.getElementById('0') as HTMLDivElement);
+  switchPlayer() {
+    this.currentPlayer = this.currentPlayer === this.playerOne ? this.playerTwo : this.playerOne;
+  }
+
+  playGame() {
+    this.startGame();
+    const cells = document.querySelectorAll('.cell');
+    cells.forEach(cell => {
+      cell.addEventListener('click', () => {
+        this.currentPlayer.makeMove(cell as HTMLDivElement);
+        if (this.checkWinningConditions()) {
+          console.log(`${this.currentPlayer.name} wins!`);
+          this.endGame();
+        } else {
+          this.switchPlayer();
+          if (this.currentPlayer.isComputer) {
+            this.currentPlayer.makeComputerMove();
+            if (this.checkWinningConditions()) {
+              console.log(`${this.currentPlayer.name} wins!`);
+              this.endGame();
+            } else {
+              this.switchPlayer();
+            }
+          }
+        }
+      });
+    });
+  }
+}
+
+const game = new Game();
+game.playGame();

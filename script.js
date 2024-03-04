@@ -73,8 +73,63 @@ var Player = /** @class */ (function () {
     };
     return Player;
 }());
-var gameboard = new Gameboard();
-gameboard.generateGameboard();
-var playerOne = new Player('Wade Watts', false);
-var playerTwo = new Player('Art3mis', true);
-playerOne.makeMove(document.getElementById('0'));
+var Game = /** @class */ (function () {
+    function Game() {
+        this.gameboard = new Gameboard();
+        this.playerOne = new Player('Player 1');
+        this.playerTwo = new Player('Player 2', true);
+        this.currentPlayer = this.playerOne;
+        this.winningConditions = this.gameboard.generateWinningConditions();
+    }
+    Game.prototype.startGame = function () {
+        this.gameboard.generateGameboard();
+    };
+    Game.prototype.endGame = function () {
+        this.gameboard.clearGameboard();
+    };
+    Game.prototype.checkWinningConditions = function () {
+        var cells = document.querySelectorAll('.cell');
+        var activeCells = Array.from(cells).filter(function (cell) { return cell.classList.contains('active'); });
+        var activeCellIds = activeCells.map(function (cell) { return parseInt(cell.id); });
+        for (var _i = 0, _a = this.winningConditions; _i < _a.length; _i++) {
+            var condition = _a[_i];
+            if (condition.every(function (cellId) { return activeCellIds.includes(cellId); })) {
+                return true;
+            }
+        }
+        return false;
+    };
+    Game.prototype.switchPlayer = function () {
+        this.currentPlayer = this.currentPlayer === this.playerOne ? this.playerTwo : this.playerOne;
+    };
+    Game.prototype.playGame = function () {
+        var _this = this;
+        this.startGame();
+        var cells = document.querySelectorAll('.cell');
+        cells.forEach(function (cell) {
+            cell.addEventListener('click', function () {
+                _this.currentPlayer.makeMove(cell);
+                if (_this.checkWinningConditions()) {
+                    console.log("".concat(_this.currentPlayer.name, " wins!"));
+                    _this.endGame();
+                }
+                else {
+                    _this.switchPlayer();
+                    if (_this.currentPlayer.isComputer) {
+                        _this.currentPlayer.makeComputerMove();
+                        if (_this.checkWinningConditions()) {
+                            console.log("".concat(_this.currentPlayer.name, " wins!"));
+                            _this.endGame();
+                        }
+                        else {
+                            _this.switchPlayer();
+                        }
+                    }
+                }
+            });
+        });
+    };
+    return Game;
+}());
+var game = new Game();
+game.playGame();
