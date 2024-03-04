@@ -1,0 +1,27 @@
+html {
+  font-size: 16px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  width: 50vw;
+  height: 50vh;
+  border-radius: 6px;
+  border: 1px solid rebeccapurple;
+  margin: 10rem;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid black;
+}
+
+.cell:active {
+  background-color: rebeccapurple;
+  color: white;
+}
