@@ -30,9 +30,12 @@ var Gameboard = /** @class */ (function () {
     function Gameboard() {
         this.cells = Array(9).fill('');
         this.isCurrentPlayer = true;
+        this.player = new Player('Y.T.');
+        this.computer = new Computer();
         this.isWinner = false;
         this.isGameOver = false;
         this.isComputer = false;
+        this.winningConditions = this.generateWinningConditions();
     }
     Gameboard.prototype.renderGameboard = function () {
         var gameboard = document.createElement('div');
@@ -45,6 +48,25 @@ var Gameboard = /** @class */ (function () {
         }
         app.appendChild(gameboard);
     };
+    Gameboard.prototype.generateEventListeners = function () {
+        var _this = this;
+        cells.forEach(function (cell) {
+            cell.addEventListener('click', _this.handleCellClick);
+        });
+        startButton.addEventListener('click', this.startGame);
+        resetButton.addEventListener('click', this.resetGame);
+    };
+    Gameboard.prototype.handleCellClick = function (e) {
+        var cell = e.target;
+        if (cell.textContent === '' && !this.isWinner) {
+            if (this.isCurrentPlayer) {
+                this.player.makeMove(cell);
+            }
+            else {
+                this.computer.makeComputerMove();
+            }
+        }
+    };
     Gameboard.prototype.generateWinningConditions = function () {
         var winningConditions = [
             [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
@@ -52,6 +74,35 @@ var Gameboard = /** @class */ (function () {
             [0, 4, 8], [2, 4, 6] // diagonals
         ];
         return winningConditions;
+    };
+    Gameboard.prototype.checkForWinner = function () {
+        var _this = this;
+        this.winningConditions.forEach(function (condition) {
+            var a = condition[0], b = condition[1], c = condition[2];
+            if (_this.cells[a] && _this.cells[a] === _this.cells[b] && _this.cells[a] === _this.cells[c]) {
+                _this.isWinner = true;
+            }
+        });
+    };
+    Gameboard.prototype.checkForDraw = function () {
+        if (this.cells.every(function (cell) { return cell !== ''; })) {
+            this.isGameOver = true;
+        }
+    };
+    Gameboard.prototype.resetGame = function () {
+        this.cells = Array(9).fill('');
+        this.isCurrentPlayer = true;
+        this.isWinner = false;
+        this.isGameOver = false;
+        cells.forEach(function (cell) { return cell.textContent = ''; });
+    };
+    Gameboard.prototype.startGame = function () {
+        this.renderGameboard();
+        this.generateEventListeners();
+    };
+    Gameboard.prototype.endGame = function () {
+        var _this = this;
+        cells.forEach(function (cell) { return cell.removeEventListener('click', _this.handleCellClick); });
     };
     return Gameboard;
 }());
@@ -71,6 +122,10 @@ var Computer = /** @class */ (function (_super) {
     }
     Computer.prototype.getRandomCell = function () {
         return Math.floor(Math.random() * 9);
+    };
+    Computer.prototype.makeComputerMove = function () {
+        var cell = cells[this.getRandomCell()];
+        cell.textContent = this.name;
     };
     return Computer;
 }(Player));
